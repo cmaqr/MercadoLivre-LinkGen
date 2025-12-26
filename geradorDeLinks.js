@@ -57,9 +57,12 @@ if (linksParaGerar.length === 0) {
     const URL_FERRAMENTA_AFILIADO = 'https://www.mercadolivre.com.br/afiliados/linkbuilder#hub'; 
     
     try {
+        // Navega para a página de afiliados e verifica se o login é necessário.
         await page.goto(URL_FERRAMENTA_AFILIADO, { waitUntil: 'networkidle2' });
+
+        // Se a URL atual não for a de afiliados, o script assume que um login é necessário.
+        if (!page.url().includes('afiliados')) {
             console.log('⚠️  Parece que você não está logado.');
-            console.log('👉 Por favor, faça login manualmente no navegador aberto.');
 
             // Lógica de Login Automático
             if (ML_EMAIL && ML_SENHA) {
@@ -75,7 +78,6 @@ if (linksParaGerar.length === 0) {
 
                     // 2. Preencher Senha
                     const selSenha = 'input[name="password"]';
-                    // Aguarda o campo de senha aparecer (pode demorar um pouco)
                     try {
                         await page.waitForSelector(selSenha, { timeout: 5000 });
                         await page.type(selSenha, ML_SENHA, { delay: 50 });
@@ -86,19 +88,25 @@ if (linksParaGerar.length === 0) {
                 } catch (err) {
                     console.error('   Erro ao tentar login automático:', err.message);
                 }
-            } else {
-                console.log('👉 Para login automático, preencha o arquivo .env com ML_EMAIL e ML_SENHA.');
-                console.log('👉 Por favor, faça login manualmente no navegador aberto.');
             }
 
-            console.log('⏳ O script aguardará até você entrar na página de afiliados...');
-            
-            // Aguarda infinitamente até a URL conter "afiliados" novamente
-            await page.waitForFunction(
-                () => window.location.href.includes('afiliados'),
-                { timeout: 0 } 
-            );
-            console.log('✅ Login detectado! Continuando...');
+            // Se o login automático não estiver configurado ou falhar, aguarda o login manual.
+            if (!page.url().includes('afiliados')) {
+                 if (!ML_EMAIL || !ML_SENHA) {
+                    console.log('👉 Para login automático, preencha o arquivo .env com ML_EMAIL e ML_SENHA.');
+                }
+                console.log('👉 Por favor, faça login manualmente no navegador aberto.');
+                console.log('⏳ O script aguardará até você entrar na página de afiliados...');
+                
+                // Aguarda infinitamente até a URL conter "afiliados" novamente
+                await page.waitForFunction(
+                    () => window.location.href.includes('afiliados'),
+                    { timeout: 0 } 
+                );
+            }
+             console.log('✅ Login detectado! Continuando...');
+        } else {
+            console.log('✅ Já está logado. Continuando...');
         }
 
         console.log(`📋 Processando ${linksParaGerar.length} links...\n`);
