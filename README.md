@@ -1,63 +1,78 @@
-# Mercado Livre LinkGen
+# 🤖 Mercado Livre Affiliate Link Generator
 
-Este projeto é uma ferramenta de automação desenvolvida em Node.js para gerar links de afiliados do Mercado Livre em massa. Ele utiliza o [Puppeteer](https://pptr.dev/) para simular um navegador, acessar a ferramenta de construção de links do Mercado Livre e gerar as URLs de afiliado automaticamente.
+![License](https://img.shields.io/badge/license-ISC-blue.svg)
+
+Uma ferramenta de automação desenvolvida em Node.js para gerar links de afiliados do Mercado Livre em massa. A ferramenta utiliza o [Puppeteer](https://pptr.dev/) para navegar, realizar login e extrair os links de forma automatizada.
 
 ## 🚀 Funcionalidades
 
--   **Geração em Massa**: Aceita múltiplos links de produtos como argumento na linha de comando.
--   **Login Automático**: Suporte para login automático configurando credenciais em variáveis de ambiente.
--   **Persistência de Sessão**: Salva os dados da sessão (cookies/localStorage) localmente para evitar a necessidade de login a cada execução.
--   **Intervenção Manual**: Caso haja CAPTCHA ou autenticação de dois fatores (2FA), o navegador permanece visível para que você possa resolver manualmente.
+-   **Geração em Massa**: Processe múltiplos links de produtos de uma só vez.
+-   **Login Automático**: Configure suas credenciais uma vez e deixe o script fazer o login por você.
+-   **Persistência de Sessão**: Mantém o login ativo entre execuções para agilizar o processo.
+-   **Suporte a Proxy**: Configure um servidor de proxy para as requisições.
+-   **Modo Interativo**: Se o login automático falhar (devido a CAPTCHA ou 2FA), o navegador permanece aberto para que a autenticação seja concluída manualmente.
 
 ## 📋 Pré-requisitos
 
--   [Node.js](https://nodejs.org/) instalado.
+-   [Node.js](https://nodejs.org/) (versão 16 ou superior)
 -   Conta ativa no programa de Afiliados do Mercado Livre.
 
-##  Instalação
+## ⚙️ Instalação e Configuração
 
-1.  Abra o terminal na pasta do projeto.
-2.  Instale as dependências necessárias:
+1.  **Clone o repositório:**
+    ```bash
+    git clone https://github.com/seu-usuario/MercadoLivre-LinkGen.git
+    cd MercadoLivre-LinkGen
+    ```
 
-```bash
-npm install
-```
+2.  **Instale as dependências:**
+    ```bash
+    npm install
+    ```
 
-## ⚙️ Configuração (Opcional)
+3.  **Crie o arquivo de configuração:**
+    Copie o arquivo de exemplo `.env.example` para um novo arquivo chamado `.env`.
+    ```bash
+    # No Windows (cmd)
+    copy .env.example .env
 
-Para habilitar o login automático, crie um arquivo chamado `.env` na raiz do projeto e adicione suas credenciais:
+    # No Linux/macOS
+    cp .env.example .env
+    ```
 
-```env
-ML_EMAIL=seu_email@exemplo.com
-ML_SENHA=sua_senha_secreta
-```
+4.  **Edite o arquivo `.env`:**
+    Abra o arquivo `.env` e preencha as variáveis de ambiente necessárias.
 
-> **Nota:** Se você optar por não criar este arquivo, o script abrirá o navegador e aguardará que você faça o login manualmente na primeira execução.
+    | Variável        | Descrição                                                                               | Obrigatório |
+    | --------------- | --------------------------------------------------------------------------------------- | ----------- |
+    | `ML_EMAIL`      | Seu e-mail de login no Mercado Livre.                                                   | **Não**     |
+    | `ML_SENHA`      | Sua senha do Mercado Livre.                                                             | **Não**     |
+    | `PROXY_SERVER`  | Endereço do servidor de proxy. Ex: `http://123.123.123.123:8080`                         | Não         |
+    | `PROXY_USERNAME`| Nome de usuário para autenticação no proxy (se necessário).                             | Não         |
+    | `PROXY_PASSWORD`| Senha para autenticação no proxy (se necessário).                                       | Não         |
+
+    > **Nota:** Se as credenciais `ML_EMAIL` e `ML_SENHA` não forem fornecidas, o script abrirá o navegador e aguardará que você faça o login manualmente na primeira execução.
 
 ## ▶️ Como Usar
 
-Execute o comando `node` apontando para o script principal e passando as URLs dos produtos que deseja converter:
+Execute o script via linha de comando, passando as URLs dos produtos que deseja converter como argumentos.
 
 ```bash
-node geradorDeLinks.js "LINK_PRODUTO_1" "LINK_PRODUTO_2" ...
+node geradorDeLinks.js "URL_PRODUTO_1" "URL_PRODUTO_2" "URL_PRODUTO_3"
 ```
 
-**Exemplo:**
-
+### Exemplo de Uso
 ```bash
-node geradorDeLinks.js https://produto.mercadolivre.com.br/MLB-123456-exemplo https://produto.mercadolivre.com.br/MLB-789012-outro
+node geradorDeLinks.js https://produto.mercadolivre.com.br/MLB-123-exemplo https://www.mercadolivre.com.br/p/MLB456-outro
 ```
 
-### Fluxo de Execução
-1.  O navegador será aberto (modo não-headless).
-2.  O script verifica se você já está logado. Se não, tenta o login automático (se configurado) ou aguarda seu login manual.
-3.  Após o login, ele acessa a ferramenta de Link Builder.
-4.  Para cada link fornecido, ele gera a URL de afiliado e exibe no terminal.
+O script irá processar cada link e exibir a URL de afiliado gerada diretamente no terminal.
 
 ## 🛠️ Solução de Problemas
 
--   **Erro de Seletor**: O Mercado Livre pode alterar o layout da página, fazendo com que o robô não encontre os botões. Se isso ocorrer, o script salvará um arquivo HTML de debug (`debug_erro_....html`) para análise.
--   **Login Travado**: Se o login automático falhar (por exemplo, devido a um CAPTCHA), interaja com a janela do navegador aberta para completar o acesso. O script detectará automaticamente quando o login for concluído.
+-   **O script falha ao encontrar os campos (erro de seletor):** O Mercado Livre pode atualizar o layout de seu site. Se isso acontecer, o script salvará um arquivo de depuração (`debug_erro_TIMESTAMP.html`) com o estado da página no momento do erro. Utilize este arquivo para inspecionar os elementos (F12 no navegador) e atualizar os seletores (`SELETOR_INPUT`, `SELETOR_BOTAO_GERAR`, etc.) no topo do arquivo `geradorDeLinks.js`.
+-   **Login automático travado:** Se a automação do login falhar por motivos como CAPTCHA ou verificação em duas etapas (2FA), simplesmente interaja com a janela do navegador que foi aberta para completar o processo. O script foi programado para detectar a conclusão do login e continuar a execução automaticamente.
 
 ## 📄 Licença
-ISC
+
+Este projeto é distribuído sob a licença ISC. Veja o arquivo `LICENSE` para mais detalhes.
